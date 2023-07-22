@@ -22,6 +22,7 @@ To create a discord webhook follow the below instructions:
 5. Change Name to anything you desire and set channel to where you want spots to output
 6. Copy the URL and paste into your hamalert.py
 
+----------------------------------------------------------------------------------------------------
 
 Created by W2ORT
 Matthew O.

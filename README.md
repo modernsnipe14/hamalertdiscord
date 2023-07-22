@@ -1,4 +1,4 @@
-# hamalertdiscord
+# HAM Alert Discord Integration
 HamAlerts to Discord Webook
 
 

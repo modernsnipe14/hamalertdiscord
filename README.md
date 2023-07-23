@@ -12,7 +12,7 @@ To Set up Telnet and Discord Connections:
    pip install requests
 3. Create your python file and copy the information from hamalert.py
 4. Edit HAMALERT USERNAME, PASSWORD, and DISCORD WEBHOOK to be your information
-5. Run Command: python3 hamalert.py
+5. Run Command: "nohup python3 hamalert.py &" (Use this command so the script stays running after you close your CLI session)
 6. Enjoy!
 
 ----------------------------------------------------------------------------------------------------

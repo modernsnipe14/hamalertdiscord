@@ -1,5 +1,6 @@
 import argparse
 import telnetlib
+import time
 import json
 import requests
 import logging
@@ -27,30 +28,60 @@ def telnet_listener(host, port, username, password):
             tn.write(username.encode("utf-8") + b"\n")
             tn.read_until(b"password: ")
             tn.write(password.encode("utf-8") + b"\n")
+            initialized = False
 
             while True:
-                data = tn.read_until(b"\n").decode("utf-8").strip()
-                logging.info("Received data:", data)
+                data = tn.read_until(b"\n", timeout=30).decode("utf-8").strip()
+                if data != "":
+                    logging.info("Received data:", data)
 
-                # Split the received data into separate pieces
-                pieces = data.split()
+                if data == f"Hello {username}, this is HamAlert":
+                    continue
+                if data == f"{username} de HamAlert >":
+                    logging.info("Telnet connected, attempting to set JSON mode.")
+                    time.sleep(1)
+                    tn.write(b"set/json\n")
+                    continue
+                if data == "Operation successful":
+                    logging.info("Successfully set JSON mode")
+                    initialized = True
+                    continue
+                if not initialized:
+                    # Dont try to parse incoming data until finished setting up JSON mode.
+                    # It's possible a spot comes in right when we first connect which can't be parsed.
+                    continue
 
-                # Ensure that the data has enough pieces to extract relevant information
-                if len(pieces) >= 5 and pieces[1] == "de":
-                    source_call = pieces[2].strip(':')
-                    destination_call = pieces[3]
-                    frequency = pieces[4]
-                    timestamp = pieces[-1]
+                if data == "":
+                    # We must have hit the timeout case in the read.
+                    # Just send a keepalive command and try another read.
+                    logging.debug(f"10s timeout hit, sending no-op")
+                    tn.sock.sendall(telnetlib.IAC + telnetlib.NOP)
+                    continue
 
-                    # Construct the message for Discord webhook
-                    message = f"DX de {source_call} @ {timestamp}\n"
-                    message += f"{frequency} on {destination_call}"
+                # Split the received data into json object
+                try:
+                    data_dict = json.loads(data)
 
-                    send_discord_webhook(message)
-                else:
-                    logging.warning("Received data is not in the expected format. Skipping.")
-                    logging.warning("Number of pieces:", len(pieces))
-                    logging.info("Received data:", pieces)
+                    required_fields = {'fullCallsign', 'callsign', 'frequency', 'mode', 'spotter', 'time', 'source'}
+                    # Ensure that the data has enough pieces to extract relevant information
+                    if all(key in data_dict for key in required_fields):
+                        # Construct the message for Discord webhook
+                        message = f"SPOT: {data_dict['callsign']} seen by {data_dict['spotter']} on {data_dict['frequency']} MHz ({data_dict['mode']}) at {data_dict['time']} UTC"
+                        sota_fields = {'summitName', 'summitRef', 'summitPoints', 'summitHeight'}
+                        if all(key in data_dict for key in sota_fields):
+                            message = "SOTA " + message
+                            message += f"\nSummit: {data_dict['summitName']} -- {data_dict['summitRef']} -- a {data_dict['summitPoints']} point summit at {data_dict['summitHeight']}m elevation!"
+
+                    else:
+                        logging.warning("Received data is not in the expected format. Skipping.")
+                        logging.warning(f"Parsed data: {data_dict}")
+
+                except json.JSONDecodeError as e:
+                    resetJson = True
+                    message = data
+
+                logging.info(f"sending message to discord: {message}")
+                send_discord_webhook(message)
 
     except ConnectionRefusedError:
         logging.error("Telnet connection refused. Make sure the server is running and reachable.")

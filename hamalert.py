@@ -1,6 +1,8 @@
+import argparse
 import telnetlib
 import json
 import requests
+import logging
 
 # Replace with your HamAlert username and password
 HAMALERT_USERNAME = "USERNAME"
@@ -14,9 +16,9 @@ def send_discord_webhook(content):
     headers = {"Content-Type": "application/json"}
     response = requests.post(DISCORD_WEBHOOK_URL, json=data, headers=headers)
     if response.status_code == 204:
-        print("Discord webhook sent successfully.")
+        logging.info("Discord webhook sent successfully.")
     else:
-        print("Failed to send Discord webhook. Status code:", response.status_code)
+        logging.error("Failed to send Discord webhook. Status code:", response.status_code)
 
 def telnet_listener(host, port, username, password):
     try:
@@ -28,7 +30,7 @@ def telnet_listener(host, port, username, password):
 
             while True:
                 data = tn.read_until(b"\n").decode("utf-8").strip()
-                print("Received data:", data)
+                logging.info("Received data:", data)
 
                 # Split the received data into separate pieces
                 pieces = data.split()
@@ -46,20 +48,32 @@ def telnet_listener(host, port, username, password):
 
                     send_discord_webhook(message)
                 else:
-                    print("Received data is not in the expected format. Skipping.")
-                    print("Number of pieces:", len(pieces))
-                    print("Received data:", pieces)
+                    logging.warning("Received data is not in the expected format. Skipping.")
+                    logging.warning("Number of pieces:", len(pieces))
+                    logging.info("Received data:", pieces)
 
     except ConnectionRefusedError:
-        print("Telnet connection refused. Make sure the server is running and reachable.")
+        logging.error("Telnet connection refused. Make sure the server is running and reachable.")
     except Exception as e:
-        print("An error occurred:", e)
+        logging.error("An error occurred:", e)
 
+def setup_args():
+    # Create an argument parser
+    parser = argparse.ArgumentParser()
 
+    # Add an argument for the logging level
+    parser.add_argument('-l', '--log-level', help='The logging level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+
+    # Parse the arguments
+    args = parser.parse_args()
+
+    # Set the logging level
+    logging.basicConfig(level=args.log_level)
 
 if __name__ == "__main__":
     # HAM ALERT TELNET INFORMATION
     HOST = "hamalert.org"
     PORT = 7300
 
+    setup_args()
     telnet_listener(HOST, PORT, HAMALERT_USERNAME, HAMALERT_PASSWORD)

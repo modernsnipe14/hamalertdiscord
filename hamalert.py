@@ -33,7 +33,7 @@ def telnet_listener(host, port, username, password):
             while True:
                 data = tn.read_until(b"\n", timeout=30).decode("utf-8").strip()
                 if data != "":
-                    logging.info("Received data:", data)
+                    logging.info(f"Received data: {data}")
 
                 if data == f"Hello {username}, this is HamAlert":
                     continue

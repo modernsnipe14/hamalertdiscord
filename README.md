@@ -5,14 +5,15 @@ HamAlerts to Discord Webook
 Using an Ubuntu Linux Machine follow the below steps:
 
 ----------------------------------------------------------------------------------------------------
-To Set up Telnet and Discord Connections: [!!!! TO BE UPDATED WITH NEW INSTRUCTIONS !!!!]
+To Set up HamAlert and Discord Connections:
 1. Create trigger on https://hamalert.org and have it action "Telnet"
 2. Create a linux machine and install python3
    sudo apt install python3-pip
    pip install requests
 3. Create your python file and copy the information from hamalert.py
 4. Edit HAMALERT USERNAME, PASSWORD, and DISCORD WEBHOOK to be your information
-5. Run Command: "nohup python3 hamalert.py &" (Use this command so the script stays running after you close your CLI session)
+5. Follow the following guide to run python as a service in your operating system. This works for Ubuntu as well!
+https://gist.github.com/emxsys/a507f3cad928e66f6410e7ac28e2990f
 6. Enjoy!
 
 ----------------------------------------------------------------------------------------------------

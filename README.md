@@ -5,7 +5,7 @@ HamAlerts to Discord Webook
 Using an Ubuntu Linux Machine follow the below steps:
 
 ----------------------------------------------------------------------------------------------------
-To Set up Telnet and Discord Connections:
+To Set up Telnet and Discord Connections: [!!!! TO BE UPDATED WITH NEW INSTRUCTIONS !!!!]
 1. Create trigger on https://hamalert.org and have it action "Telnet"
 2. Create a linux machine and install python3
    sudo apt install python3-pip
@@ -29,3 +29,10 @@ To create a discord webhook follow the below instructions:
 Created by W2ORT
 Matthew O.
 https://w2ort.com
+
+Updated and heavily corrected by:
+Dylon N6MX
+Devin KN6PHZ
+
+Special Thanks to:
+Mark KD7DTS and the W6TRW Club!
